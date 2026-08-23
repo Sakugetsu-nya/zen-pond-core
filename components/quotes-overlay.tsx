@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import { quotes, randomQuote, type Quote } from "@/lib/quotes";
 import { type ZenLiquidApp } from "@/components/ui/zen-liquid";
 
-export function QuotesOverlay({ app }: { app?: ZenLiquidApp | null }) {
+export function QuotesOverlay({
+  app,
+  hidden,
+}: {
+  app?: ZenLiquidApp | null;
+  hidden?: boolean;
+}) {
   // SSR 与客户端必须输出一致，初始用固定句子，mounted 后再随机
   const [q, setQ] = useState<Quote>(() => quotes[0]);
   const [key, setKey] = useState(0);
@@ -21,6 +27,8 @@ export function QuotesOverlay({ app }: { app?: ZenLiquidApp | null }) {
     }, 12000);
     return () => clearInterval(id);
   }, [app]);
+
+  if (hidden) return null;
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-[20%] z-20 flex justify-center px-6">

@@ -3,6 +3,15 @@
 import { useStore } from "@/lib/store";
 import { PanelShell } from "@/components/panel";
 
+// 运行时推断 basePath，兼容 GitHub Pages 项目页（/repo/）与根路径部署。
+function getAssetBase(): string {
+  if (typeof window === "undefined") return "";
+  const seg = window.location.pathname.split("/").filter(Boolean);
+  return seg.length > 0 ? `/${seg[0]}` : "";
+}
+const resolveAsset = (p: string) =>
+  `${getAssetBase()}${p}`.replace(/\/{2,}/g, "/");
+
 const BG_IMAGES = [
   { name: "荷叶", src: "/images/bg-lotus.jpg" },
   { name: "碧潭", src: "/images/bg-turquoise.jpg" },
@@ -33,7 +42,7 @@ export function SettingsModule({ onClose }: { onClose: () => void }) {
                 title={b.name}
               >
                 <img
-                  src={b.src}
+                  src={resolveAsset(b.src)}
                   alt={b.name}
                   className="h-full w-full object-cover"
                 />
