@@ -68,6 +68,9 @@ export class ZenAudio {
   private analyser: AnalyserNode | null = null;
   private tracks = new Map<SoundId, Track>();
   private masterVolume = 0.5;
+  // 交互音效（木鱼/水花）独立增益节点：不经 master，响度固定且更突出，
+  // 避免被环境音主音量压小导致「敲木鱼听不清」
+  private sfxGain: GainNode | null = null;
   // 「用户意图播放」列表：用户在 suspended（无手势）时点了播放，我们记录意图，
   // 等 AudioContext 真正 running 后再据此启动。与 tracks（真实在播）分离，
   // 保证 UI 状态与引擎状态一致，避免按钮「点不掉/点不开」。
@@ -87,6 +90,10 @@ export class ZenAudio {
     // 创建瞬间先把 master 静音，等音频真正开始后再抬到目标音量，
     // 杜绝 AudioContext 初始化/resume 时的瞬态爆音被听成蜂鸣
     this.master.gain.value = 0;
+    // 交互音效独立通道：固定增益，直接连到 destination，不经 master
+    this.sfxGain = this.ctx.createGain();
+    this.sfxGain.gain.value = 1.0;
+    this.sfxGain.connect(this.ctx.destination);
     this.analyser = this.ctx.createAnalyser();
     this.analyser.fftSize = 256;
     this.master.connect(this.analyser);
@@ -328,7 +335,7 @@ export class ZenAudio {
   /** 播一个一次性音效文件；文件缺失/解码失败时静默，不再使用合成音 */
   private async playSfx(key: "woodblock" | "splash") {
     this.ensure();
-    if (!this.ctx || !this.master) return;
+    if (!this.ctx || !this.sfxGain) return;
     // 无用户手势（suspended）时音效不排期，直接跳过；音效本就在交互时触发，
     // 调用点已有用户手势，正常不会走到这里，仅作防御
     if (this.ctx.state === "suspended") {
@@ -352,13 +359,15 @@ export class ZenAudio {
       const g = this.ctx.createGain();
       g.gain.value = 0.0001;
       src.connect(g);
-      g.connect(this.master);
+      // 交互音效走独立通道（不经过 master），响度不受环境音主音量影响
+      g.connect(this.sfxGain);
+      // 木鱼单独放大响度，敲击更清脆突出；水花保持适中
+      const peak = key === "woodblock" ? 1.4 : 0.9;
       const now = this.ctx.currentTime;
       g.gain.setValueAtTime(0.0001, now);
-      g.gain.linearRampToValueAtTime(0.9, now + 0.01);
+      g.gain.linearRampToValueAtTime(peak, now + 0.005);
       g.gain.linearRampToValueAtTime(0.0001, now + Math.min(buf.duration, 1.2));
       src.start();
-      this.rampMasterToTarget();
     } catch (e) {
       console.warn(`[zen-audio] 音效解码失败，已跳过: ${SFX_FILES[key]}`, e);
     }
