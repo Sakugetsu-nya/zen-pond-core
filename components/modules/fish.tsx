@@ -52,11 +52,11 @@ export function FishModule({
           className="group relative flex h-28 w-28 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[#1d9e75] shadow-lg transition-transform hover:bg-white/15 active:scale-90"
           aria-label="敲击木鱼"
         >
-          <svg viewBox="0 0 220 170" className="h-16 w-16">
+          <svg viewBox="0 0 240 170" className="h-14 w-16">
             <defs>
-              <radialGradient id="woodBody" cx="45%" cy="22%" r="82%">
+              <radialGradient id="woodBody" cx="35%" cy="28%" r="85%">
                 <stop offset="0%" stopColor="#C07A55" />
-                <stop offset="60%" stopColor="#9B5E3D" />
+                <stop offset="55%" stopColor="#9B5E3D" />
                 <stop offset="100%" stopColor="#754225" />
               </radialGradient>
               <linearGradient id="woodBase" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -68,47 +68,45 @@ export function FishModule({
               </filter>
             </defs>
 
-            {/* 底座 / 下半球 */}
+            {/* 底座 */}
             <path
-              d="M40 95 C40 95 45 140 110 140 C175 140 180 95 180 95 C180 95 160 105 110 105 C60 105 40 95 40 95 Z"
+              d="M60 128 C60 128 85 142 130 142 C175 142 200 128 200 128 C200 128 175 138 130 138 C85 138 60 133 60 128 Z"
               fill="url(#woodBase)"
-              stroke="#4A2515"
-              strokeWidth="1"
             />
 
-            {/* 上半球 */}
+            {/* 木鱼主体：半侧面椭圆 */}
             <path
-              d="M40 95 C40 50 70 20 110 20 C150 20 180 50 180 95 C180 100 150 105 110 105 C70 105 40 100 40 95 Z"
+              d="M55 88 C55 50 90 22 140 22 C185 22 215 50 215 88 C215 118 185 130 140 130 C90 130 55 118 55 88 Z"
               fill="url(#woodBody)"
               stroke="#4A2515"
               strokeWidth="1.5"
               filter="url(#woodShadow)"
             />
 
-            {/* 小尾巴 */}
-            <circle cx="178" cy="58" r="7" fill="#9B5E3D" stroke="#754225" strokeWidth="1" />
-
-            {/* 横向打击开口 */}
+            {/* 斜向打击开口 */}
             <path
               className="transition-colors duration-75 group-active:fill-[#5D3020]"
-              d="M45 92 C45 92 70 98 110 98 C150 98 175 92 175 92 C175 92 150 108 110 108 C70 108 45 108 45 92 Z"
+              d="M65 78 C65 78 100 60 145 72 C175 80 190 95 185 108 C180 118 145 108 125 96 C100 82 78 96 68 96 C58 96 58 84 65 78 Z"
               fill="#3E1F10"
               stroke="#2A150A"
               strokeWidth="1"
             />
 
-            {/* 参考图的脸：白圈黑眼 + 小三角嘴 */}
-            <circle cx="75" cy="55" r="11" fill="#FFF8E7" stroke="#E8DCC8" strokeWidth="1" />
-            <circle cx="75" cy="55" r="6" fill="#1a1a1a" />
-            <circle cx="140" cy="55" r="11" fill="#FFF8E7" stroke="#E8DCC8" strokeWidth="1" />
-            <circle cx="140" cy="55" r="6" fill="#1a1a1a" />
-            <path d="M102 72 l8 12 l8 -12 Z" fill="#1a1a1a" />
+            {/* 尾巴 */}
+            <ellipse cx="210" cy="82" rx="14" ry="10" fill="#9B5E3D" stroke="#754225" strokeWidth="1" />
 
-            {/* 木槌：短柄 + 底部圆头，放在最上层，按下时落下敲一下 */}
-            <g className="transition-transform duration-75 origin-[110px_70px] -rotate-0 group-active:rotate-[8deg] group-active:translate-y-[10px]">
-              <rect x="108" y="10" width="4" height="34" rx="2" fill="#C19A6B" stroke="#8B6B4A" strokeWidth="1" />
-              <circle cx="110" cy="48" r="14" fill="#E8DCC8" stroke="#C19A6B" strokeWidth="1.5" />
-              <circle cx="108" cy="46" r="4.5" fill="#F5E6D3" opacity="0.7" />
+            {/* 脸：白圈黑眼 + 小三角嘴 */}
+            <circle cx="85" cy="68" r="10" fill="#FFF8E7" stroke="#E8DCC8" strokeWidth="1" />
+            <circle cx="85" cy="68" r="5.5" fill="#1a1a1a" />
+            <circle cx="120" cy="63" r="10" fill="#FFF8E7" stroke="#E8DCC8" strokeWidth="1" />
+            <circle cx="120" cy="63" r="5.5" fill="#1a1a1a" />
+            <path d="M98 80 l6 10 l6 -10 Z" fill="#1a1a1a" />
+
+            {/* 木槌：从右侧斜向穿入开口，放在最上层 */}
+            <g className="transition-transform duration-75 origin-[210px_90px] -rotate-0 group-active:rotate-[-5deg] group-active:translate-x-[-6px]">
+              <rect x="125" y="86" width="105" height="10" rx="5" fill="#E8DCC8" stroke="#C19A6B" strokeWidth="1" transform="rotate(-6 177 91)" />
+              <circle cx="118" cy="91" r="13" fill="#F5E6D3" stroke="#C19A6B" strokeWidth="1" />
+              <circle cx="116" cy="89" r="4" fill="#E8DCC8" opacity="0.6" />
             </g>
           </svg>
         </button>
