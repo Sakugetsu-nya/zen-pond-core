@@ -267,7 +267,7 @@ export function ZenShell() {
         rain={false}
       />
 
-      <QuotesOverlay app={app} hidden={active !== null} />
+      <QuotesOverlay app={app} shifted={active !== null} />
 
       {!uiHidden && (
         <>

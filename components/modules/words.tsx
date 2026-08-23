@@ -24,21 +24,58 @@ export function WordsModule({ onClose }: { onClose: () => void }) {
       <div className="flex justify-center gap-3">
         <button
           onClick={() => go(-1)}
-          className="rounded-full bg-white/10 px-5 py-2 text-[13px] text-white/80"
+          title="上一篇"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
         >
-          上一篇
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
         </button>
         <button
           onClick={rand}
-          className="rounded-full bg-white/10 px-5 py-2 text-[13px] text-white/80"
+          title="随机"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
         >
-          随机
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+          >
+            <polyline points="16 3 21 3 21 8" />
+            <line x1="4" y1="20" x2="21" y2="3" />
+            <polyline points="21 16 21 21 16 21" />
+            <line x1="15" y1="15" x2="21" y2="21" />
+            <line x1="4" y1="4" x2="9" y2="9" />
+          </svg>
         </button>
         <button
           onClick={() => go(1)}
-          className="rounded-full bg-white/10 px-5 py-2 text-[13px] text-white/80"
+          title="下一篇"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white/80 transition-colors hover:bg-white/20 hover:text-white"
         >
-          下一篇
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-5 w-5"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
         </button>
       </div>
     </PanelShell>

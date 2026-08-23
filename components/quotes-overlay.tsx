@@ -6,10 +6,10 @@ import { type ZenLiquidApp } from "@/components/ui/zen-liquid";
 
 export function QuotesOverlay({
   app,
-  hidden,
+  shifted,
 }: {
   app?: ZenLiquidApp | null;
-  hidden?: boolean;
+  shifted?: boolean;
 }) {
   // SSR 与客户端必须输出一致，初始用固定句子，mounted 后再随机
   const [q, setQ] = useState<Quote>(() => quotes[0]);
@@ -28,10 +28,12 @@ export function QuotesOverlay({
     return () => clearInterval(id);
   }, [app]);
 
-  if (hidden) return null;
-
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[20%] z-20 flex justify-center px-6 sm:px-6 pl-[5rem] sm:pl-6">
+    <div
+      className={`pointer-events-none fixed inset-x-0 z-20 flex justify-center px-6 pl-[5rem] transition-[bottom] duration-300 sm:pl-6 ${
+        shifted ? "bottom-[8%]" : "bottom-[20%]"
+      }`}
+    >
       <p
         key={key}
         className="zen-fade-in max-w-xl text-center text-[15px] leading-relaxed text-white/85"
