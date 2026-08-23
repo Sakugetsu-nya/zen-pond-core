@@ -68,13 +68,6 @@ export function FishModule({
               </filter>
             </defs>
 
-            {/* 木槌：短柄 + 底部圆头，按下时落下敲一下 */}
-            <g className="transition-transform duration-75 origin-[110px_70px] -rotate-0 group-active:rotate-[8deg] group-active:translate-y-[10px]">
-              <rect x="108" y="14" width="4" height="34" rx="2" fill="#E8DCC8" stroke="#D4C4B0" strokeWidth="1" />
-              <circle cx="110" cy="52" r="14" fill="#F5E6D3" stroke="#D4C4B0" strokeWidth="1" />
-              <circle cx="108" cy="50" r="4.5" fill="#E8DCC8" opacity="0.6" />
-            </g>
-
             {/* 底座 / 下半球 */}
             <path
               d="M40 95 C40 95 45 140 110 140 C175 140 180 95 180 95 C180 95 160 105 110 105 C60 105 40 95 40 95 Z"
@@ -110,6 +103,13 @@ export function FishModule({
             <circle cx="140" cy="55" r="11" fill="#FFF8E7" stroke="#E8DCC8" strokeWidth="1" />
             <circle cx="140" cy="55" r="6" fill="#1a1a1a" />
             <path d="M102 72 l8 12 l8 -12 Z" fill="#1a1a1a" />
+
+            {/* 木槌：短柄 + 底部圆头，放在最上层，按下时落下敲一下 */}
+            <g className="transition-transform duration-75 origin-[110px_70px] -rotate-0 group-active:rotate-[8deg] group-active:translate-y-[10px]">
+              <rect x="108" y="10" width="4" height="34" rx="2" fill="#C19A6B" stroke="#8B6B4A" strokeWidth="1" />
+              <circle cx="110" cy="48" r="14" fill="#E8DCC8" stroke="#C19A6B" strokeWidth="1.5" />
+              <circle cx="108" cy="46" r="4.5" fill="#F5E6D3" opacity="0.7" />
+            </g>
           </svg>
         </button>
         <div className="text-[15px] text-white/90">
