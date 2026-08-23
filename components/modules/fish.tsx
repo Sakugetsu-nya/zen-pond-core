@@ -52,69 +52,64 @@ export function FishModule({
           className="group relative flex h-28 w-28 items-center justify-center rounded-full border border-white/10 bg-white/10 text-[#1d9e75] shadow-lg transition-transform hover:bg-white/15 active:scale-90"
           aria-label="敲击木鱼"
         >
-          <svg viewBox="0 0 200 190" className="h-16 w-16">
+          <svg viewBox="0 0 220 170" className="h-16 w-16">
             <defs>
-              <radialGradient id="woodBody" cx="38%" cy="22%" r="85%">
-                <stop offset="0%" stopColor="#A65E3F" />
-                <stop offset="55%" stopColor="#7A3A25" />
-                <stop offset="100%" stopColor="#5C2A1A" />
+              <radialGradient id="woodBody" cx="45%" cy="22%" r="82%">
+                <stop offset="0%" stopColor="#C07A55" />
+                <stop offset="60%" stopColor="#9B5E3D" />
+                <stop offset="100%" stopColor="#754225" />
               </radialGradient>
               <linearGradient id="woodBase" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#6B3E26" />
-                <stop offset="100%" stopColor="#4A2515" />
+                <stop offset="0%" stopColor="#A06A45" />
+                <stop offset="100%" stopColor="#6B3E26" />
               </linearGradient>
               <filter id="woodShadow" x="-20%" y="-20%" width="140%" height="140%">
-                <feDropShadow dx="0" dy="2" stdDeviation="2.5" floodColor="#2E1B0A" floodOpacity="0.35" />
+                <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#2E1B0A" floodOpacity="0.32" />
               </filter>
             </defs>
 
-            {/* 底座 */}
-            <ellipse cx="130" cy="168" rx="42" ry="10" fill="url(#woodBase)" />
+            {/* 木槌：单独放在右侧，按下时敲向木鱼 */}
+            <g className="transition-transform duration-75 origin-[190px_120px] rotate-0 group-active:-rotate-16">
+              <rect x="150" y="116" width="60" height="10" rx="5" fill="#E8DCC8" stroke="#D4C4B0" strokeWidth="1" transform="rotate(-12 180 121)" />
+              <circle cx="205" cy="114" r="12" fill="#F5E6D3" stroke="#D4C4B0" strokeWidth="1" />
+              <circle cx="203" cy="112" r="4" fill="#E8DCC8" opacity="0.6" />
+            </g>
 
-            {/* 木鱼主体：圆润梨形 */}
+            {/* 底座 / 下半球 */}
             <path
-              d="M60 155 C35 155 28 118 32 82 C36 48 68 22 102 22 C136 22 166 48 171 82 C175 118 168 155 143 155 C118 168 85 168 60 155 Z"
+              d="M40 95 C40 95 45 140 110 140 C175 140 180 95 180 95 C180 95 160 105 110 105 C60 105 40 95 40 95 Z"
+              fill="url(#woodBase)"
+              stroke="#4A2515"
+              strokeWidth="1"
+            />
+
+            {/* 上半球 */}
+            <path
+              d="M40 95 C40 50 70 20 110 20 C150 20 180 50 180 95 C180 100 150 105 110 105 C70 105 40 100 40 95 Z"
               fill="url(#woodBody)"
               stroke="#4A2515"
               strokeWidth="1.5"
               filter="url(#woodShadow)"
             />
 
-            {/* 打击开口：弧形长缝 */}
+            {/* 小尾巴 */}
+            <circle cx="178" cy="58" r="7" fill="#9B5E3D" stroke="#754225" strokeWidth="1" />
+
+            {/* 横向打击开口 */}
             <path
               className="transition-colors duration-75 group-active:fill-[#5D3020]"
-              d="M52 78 C52 78 82 48 122 58 C148 65 162 95 158 122 C154 138 132 125 122 105 C112 85 85 105 62 105 C50 105 46 88 52 78 Z"
+              d="M45 92 C45 92 70 98 110 98 C150 98 175 92 175 92 C175 92 150 108 110 108 C70 108 45 108 45 92 Z"
               fill="#3E1F10"
               stroke="#2A150A"
               strokeWidth="1"
             />
-            {/* 开口内部高光 */}
-            <path
-              d="M60 78 C60 78 88 55 122 63 C140 68 152 90 148 110"
-              stroke="#7A4A35"
-              strokeWidth="2"
-              fill="none"
-              strokeLinecap="round"
-              opacity="0.5"
-            />
 
-            {/* 原来那张脸：眼睛 + 倒 V 小嘴 */}
-            <circle cx="58" cy="50" r="5" fill="#1a1a1a" />
-            <circle cx="90" cy="50" r="5" fill="#1a1a1a" />
-            <path
-              d="M70 66 l5 10 l5 -10"
-              stroke="#1a1a1a"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-              fill="none"
-            />
-
-            {/* 木槌：红色杆 + 米色圆头，按下时落下 */}
-            <g className="transition-transform duration-75 origin-[165px_20px] -rotate-32 group-active:-rotate-6">
-              <line x1="165" y1="15" x2="130" y2="102" stroke="#C0392B" strokeWidth="4" strokeLinecap="round" />
-              <circle cx="130" cy="102" r="11" fill="#F5E6D3" stroke="#D4C4B0" strokeWidth="1" />
-              <circle cx="128" cy="100" r="3.5" fill="#E8DCC8" opacity="0.6" />
-            </g>
+            {/* 参考图的脸：白圈黑眼 + 小三角嘴 */}
+            <circle cx="75" cy="55" r="11" fill="#FFF8E7" stroke="#E8DCC8" strokeWidth="1" />
+            <circle cx="75" cy="55" r="6" fill="#1a1a1a" />
+            <circle cx="140" cy="55" r="11" fill="#FFF8E7" stroke="#E8DCC8" strokeWidth="1" />
+            <circle cx="140" cy="55" r="6" fill="#1a1a1a" />
+            <path d="M102 72 l8 12 l8 -12 Z" fill="#1a1a1a" />
           </svg>
         </button>
         <div className="text-[15px] text-white/90">
