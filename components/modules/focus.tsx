@@ -75,17 +75,19 @@ export function FocusModule({
           ))}
         </div>
         <div className="flex gap-3">
-          <button
-            onClick={() => setState((prev) => ({ ...prev, remaining: prev.mins * 60, running: false }))}
-            className="rounded-full bg-white/10 px-5 py-2.5 text-[14px] text-white/80 transition-colors hover:bg-white/15"
-          >
-            停止
-          </button>
+          {(running || remaining !== mins * 60) && (
+            <button
+              onClick={() => setState((prev) => ({ ...prev, remaining: prev.mins * 60, running: false }))}
+              className="rounded-full bg-white/10 px-5 py-2.5 text-[14px] text-white/80 transition-colors hover:bg-white/15"
+            >
+              停止
+            </button>
+          )}
           <button
             onClick={() => setState((prev) => ({ ...prev, running: !prev.running }))}
             className="rounded-full bg-[#1d9e75] px-8 py-2.5 text-[14px] text-white"
           >
-            {running ? "暂停" : "开始"}
+            {running ? "暂停" : remaining === mins * 60 ? "开始" : "继续"}
           </button>
         </div>
       </div>

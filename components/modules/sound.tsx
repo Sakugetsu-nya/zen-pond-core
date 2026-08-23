@@ -273,6 +273,9 @@ export function SoundModule({
             className="h-4 w-4 accent-[#1d9e75]"
           />
         </label>
+        <div className="-mt-3 text-[11px] text-white/45">
+          开启后，播放声音时水面会随机泛起轻柔涟漪
+        </div>
       </div>
     </PanelShell>
   );
