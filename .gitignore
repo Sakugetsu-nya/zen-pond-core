@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js build outputs
+.next/
+out/
+
+# Deploy directory (generated static site, push separately if needed)
+deploy/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Temporary / backup directories created during local development
+.next_bak*
+out_bak*
+.trash_stub/
+.buildtest/
+.workbuddy/
+
+# Legacy build cache
+.next-ghp/
+.next_bak*/
+out_bak*/
+.trash_stub/
+.buildtest/
+.workbuddy/
