@@ -31,7 +31,7 @@ export function QuotesOverlay({
   if (hidden) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-[20%] z-20 flex justify-center px-6">
+    <div className="pointer-events-none fixed inset-x-0 bottom-[20%] z-20 flex justify-center px-6 sm:px-6 pl-[5rem] sm:pl-6">
       <p
         key={key}
         className="zen-fade-in max-w-xl text-center text-[15px] leading-relaxed text-white/85"
@@ -39,7 +39,7 @@ export function QuotesOverlay({
       >
         {q.text}
         {q.author ? (
-          <span className="ml-2 text-[13px] text-white/55">— {q.author}</span>
+          <span className="block text-[13px] text-white/55">— {q.author}</span>
         ) : null}
       </p>
     </div>
