@@ -1,7 +1,8 @@
 # 一池静水 · Zen Pond
 
-一个以「禅意解压」为核心的沉浸式网页应用。全屏 WebGL 水波纹背景，鼠标划过、点击、声音播放都会在水面泛起轻柔涟漪；内置多种冥想与正念模块，帮助你随时放松、专注、回归当下。
-[部署仓库](https://github.com/Sakugetsu-nya/zen-pond) [点击使用](https://sakugetsu-nya.github.io/zen-pond/)
+一个以「禅意解压」为核心的沉浸式网页应用。全屏 WebGL 水波纹背景，鼠标划过、点击、声音播放都会在水面泛起轻柔涟漪；内置多种冥想与正念模块，帮助你随时放松、专注、回归当下。<br>
+✨[部署仓库](https://github.com/Sakugetsu-nya/zen-pond)<br> 
+🌊[点击使用](https://sakugetsu-nya.github.io/zen-pond/)
 > 设计理念：极简、留白、无打扰。所有界面元素都可以一键隐藏，只留下一片会呼吸的水面。
 
 ---
