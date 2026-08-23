@@ -183,24 +183,8 @@ export function SoundModule({
   const toggle = (id: SoundId) => {
     if (audio.isPlaying(id)) {
       audio.stop(id);
-      // 用户手动关闭溪流：记住偏好，之后不再默认自动播放
-      if (id === "creek") {
-        try {
-          localStorage.setItem("zen-creek-off", "1");
-        } catch {
-          /* ignore */
-        }
-      }
     } else {
       audio.play(id, vols[id]);
-      // 用户重新打开溪流：清除关闭标记
-      if (id === "creek") {
-        try {
-          localStorage.removeItem("zen-creek-off");
-        } catch {
-          /* ignore */
-        }
-      }
     }
     // UI 状态以引擎真实状态为准，调用后立刻同步，避免异步脱节导致按钮失灵
     setPlaying(() => {

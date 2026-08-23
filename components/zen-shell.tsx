@@ -72,18 +72,11 @@ export function ZenShell() {
   const toggleUiHidden = useCallback(() => setUiHidden((h) => !h), []);
 
   // 默认开启溪流：仅当用户「从未手动关闭过溪流」时才自动播放。
-  // 用户一旦在声音面板关掉溪流，写入 zen-creek-off 标记，之后不再强制重启，
-  // 这样既满足「默认开溪流」，又不会在「关闭所有声音」后仍被偷偷重启。
+  // 默认开启溪流：进入后用户首次交互（pointerdown）即恢复并启动溪流。
+  // 不持久化「关闭标记」——用户手动关掉只是当前不播，刷新后仍为默认开。
   useEffect(() => {
     const audio = getZenAudio();
-    let userClosedCreek = false;
-    try {
-      userClosedCreek = localStorage.getItem("zen-creek-off") === "1";
-    } catch {
-      /* ignore */
-    }
     const startCreek = () => {
-      if (userClosedCreek) return;
       if (audio.isPlaying("creek")) return;
       audio.play("creek", 0.7);
     };
@@ -204,9 +197,9 @@ export function ZenShell() {
           const x = (Math.random() * 2 - 1) * 0.85;
           const y = (Math.random() * 2 - 1) * 0.85;
           const f = rippleFactor(settings.rippleStrength);
-          // 基础可见量 + 音量调制；即便音量极低也保留涟漪下限
-          const radius = (0.04 + lvl * 0.08) * f;
-          const strength = (0.1 + lvl * 0.25) * f;
+          // 随声涟漪整体幅度偏小：基础量减半 + 音量调制减半，保持克制轻柔
+          const radius = (0.022 + lvl * 0.04) * f;
+          const strength = (0.05 + lvl * 0.12) * f;
           addDropToApp(appRef.current, x, y, radius, strength);
         }
       }
