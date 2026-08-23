@@ -182,20 +182,9 @@ export class ZenAudio {
     trackGain.gain.value = 0;
     trackGain.connect(this.master);
 
-    const stopAndCleanup = (sources: AudioScheduledSourceNode[]) => {
-      sources.forEach((s) => {
-        try {
-          s.stop();
-        } catch {
-          /* ignore */
-        }
-        s.disconnect();
-      });
-      trackGain.disconnect();
-      this.tracks.delete(id);
-    };
-
-    let sources: AudioScheduledSourceNode[] = [];
+    let stopped = false;
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const liveSources: AudioScheduledSourceNode[] = [];
 
     try {
       const res = await fetch(FILE_MAP[id]);
@@ -205,19 +194,70 @@ export class ZenAudio {
       }
       const arr = await res.arrayBuffer();
       const buf = await ctx.decodeAudioData(arr);
-      const src = ctx.createBufferSource();
-      src.buffer = buf;
-      src.loop = true;
-      src.connect(trackGain);
-      // 跳过文件最开头 0.25s（许多环境音素材开头有爆音/咔哒声）
-      const skip = Math.min(0.25, buf.duration);
-      src.start(0, skip);
-      sources = [src];
+      // 双段交叉淡变循环：两段同源 buffer 错开 CROSS 秒调度，
+      // 每段结尾淡出、下一段开头淡入，接缝处交叉淡化，
+      // 消除素材首尾不连续造成的「咔哒」接缝，实现无缝循环。
+      const CROSS = 0.06;
+      const skip = Math.min(0.25, buf.duration); // 跳过开头可能的爆音
+      const segLen = Math.max(0.5, buf.duration - skip);
+
+      const startSegment = (startAt: number) => {
+        if (stopped) return;
+        const s = ctx.createBufferSource();
+        s.buffer = buf;
+        const g = ctx.createGain();
+        g.gain.value = 0;
+        s.connect(g);
+        g.connect(trackGain);
+        // 播放一段（skip → segLen），结束自动 stop，无需手动终止
+        s.start(startAt, skip, segLen);
+        // 段内极短淡入，仅用于交叉平滑
+        g.gain.setValueAtTime(0, startAt);
+        g.gain.linearRampToValueAtTime(1, startAt + 0.01);
+        // 段结束前 CROSS 秒开始淡出
+        const fadeOutAt = startAt + segLen - CROSS;
+        g.gain.setValueAtTime(1, Math.max(startAt + 0.01, fadeOutAt));
+        g.gain.linearRampToValueAtTime(0, startAt + segLen);
+        s.onended = () => {
+          try {
+            s.disconnect();
+          } catch {
+            /* ignore */
+          }
+          const i = liveSources.indexOf(s);
+          if (i >= 0) liveSources.splice(i, 1);
+        };
+        liveSources.push(s);
+        // 在段结束前 CROSS 秒启动下一段，与上一段交叉
+        const nextStart = startAt + segLen - CROSS;
+        const delayMs = Math.max(0, (nextStart - ctx.currentTime) * 1000 - 30);
+        const t = setTimeout(() => startSegment(nextStart), delayMs);
+        timers.push(t);
+      };
+
+      startSegment(ctx.currentTime + 0.02);
+
       this.tracks.set(id, {
-        stop: () => stopAndCleanup(sources),
+        stop: () => {
+          stopped = true;
+          timers.forEach((t) => clearTimeout(t));
+          liveSources.forEach((s) => {
+            try {
+              s.stop();
+            } catch {
+              /* ignore */
+            }
+            try {
+              s.disconnect();
+            } catch {
+              /* ignore */
+            }
+          });
+          liveSources.length = 0;
+        },
         gain: trackGain,
       });
-      // 1.2s 淡入到目标音量，避免突兀的起始声
+      // 1.2s 整体淡入到目标音量，避免突兀的起始声
       const now = ctx.currentTime;
       trackGain.gain.cancelScheduledValues(now);
       trackGain.gain.setValueAtTime(0, now);
