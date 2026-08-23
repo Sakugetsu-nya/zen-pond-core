@@ -74,24 +74,15 @@ export function SettingsModule({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between">
-          <div className="text-[13px] text-white/80">随声起涟漪</div>
-          <button
-            onClick={() => update({ rippleOnSound: !settings.rippleOnSound })}
-            role="switch"
-            aria-checked={settings.rippleOnSound}
-            className={`relative h-6 w-11 rounded-full transition-colors ${
-              settings.rippleOnSound ? "bg-[#1d9e75]" : "bg-white/15"
-            }`}
-            title="声音播放时水面随机泛起涟漪"
-          >
-            <span
-              className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
-                settings.rippleOnSound ? "translate-x-[22px]" : "translate-x-0.5"
-              }`}
-            />
-          </button>
-        </div>
+        <label className="flex items-center justify-between text-[13px] text-white/80">
+          <span>随声起涟漪</span>
+          <input
+            type="checkbox"
+            checked={settings.rippleOnSound}
+            onChange={(e) => update({ rippleOnSound: e.target.checked })}
+            className="h-4 w-4 accent-[#1d9e75]"
+          />
+        </label>
         <div className="-mt-3 text-[11px] text-white/45">
           开启后，播放声音时水面会随机泛起轻柔涟漪
         </div>

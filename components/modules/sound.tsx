@@ -264,8 +264,8 @@ export function SoundModule({
           <span>随声起涟漪</span>
           <input
             type="checkbox"
-            checked={settings.audioReactive}
-            onChange={(e) => update({ audioReactive: e.target.checked })}
+            checked={settings.rippleOnSound}
+            onChange={(e) => update({ rippleOnSound: e.target.checked })}
             className="h-4 w-4 accent-[#1d9e75]"
           />
         </label>
