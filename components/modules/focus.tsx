@@ -74,12 +74,20 @@ export function FocusModule({
             </button>
           ))}
         </div>
-        <button
-          onClick={() => setState((prev) => ({ ...prev, running: !prev.running }))}
-          className="rounded-full bg-[#1d9e75] px-8 py-2.5 text-[14px] text-white"
-        >
-          {running ? "暂停" : "开始"}
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setState((prev) => ({ ...prev, remaining: prev.mins * 60, running: false }))}
+            className="rounded-full bg-white/10 px-5 py-2.5 text-[14px] text-white/80 transition-colors hover:bg-white/15"
+          >
+            停止
+          </button>
+          <button
+            onClick={() => setState((prev) => ({ ...prev, running: !prev.running }))}
+            className="rounded-full bg-[#1d9e75] px-8 py-2.5 text-[14px] text-white"
+          >
+            {running ? "暂停" : "开始"}
+          </button>
+        </div>
       </div>
     </PanelShell>
   );
@@ -106,7 +114,7 @@ export function FocusFloatingPill({
     <button
       onClick={onClick}
       title="返回专注"
-      className="pointer-events-auto fixed left-4 top-24 z-50 flex items-center gap-3 rounded-full border border-white/12 bg-black/45 px-3 py-2 text-white shadow-lg backdrop-blur-md transition-transform hover:scale-105"
+      className="pointer-events-auto fixed left-1/2 top-20 z-50 -translate-x-1/2 flex items-center gap-3 rounded-full border border-white/12 bg-black/45 px-3 py-2 text-white shadow-lg backdrop-blur-md transition-transform hover:scale-105 sm:left-4 sm:top-24 sm:translate-x-0"
     >
       <div className="relative h-9 w-9">
         <svg viewBox="0 0 40 40" className="h-full w-full -rotate-90">
