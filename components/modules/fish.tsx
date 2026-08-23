@@ -68,11 +68,11 @@ export function FishModule({
               </filter>
             </defs>
 
-            {/* 木槌：放在木鱼正上方，按下时落下敲一下 */}
+            {/* 木槌：短柄 + 底部圆头，按下时落下敲一下 */}
             <g className="transition-transform duration-75 origin-[110px_70px] -rotate-0 group-active:rotate-[8deg] group-active:translate-y-[10px]">
-              <rect x="106" y="2" width="8" height="56" rx="4" fill="#E8DCC8" stroke="#D4C4B0" strokeWidth="1" />
-              <circle cx="110" cy="60" r="13" fill="#F5E6D3" stroke="#D4C4B0" strokeWidth="1" />
-              <circle cx="108" cy="58" r="4" fill="#E8DCC8" opacity="0.6" />
+              <rect x="108" y="14" width="4" height="34" rx="2" fill="#E8DCC8" stroke="#D4C4B0" strokeWidth="1" />
+              <circle cx="110" cy="52" r="14" fill="#F5E6D3" stroke="#D4C4B0" strokeWidth="1" />
+              <circle cx="108" cy="50" r="4.5" fill="#E8DCC8" opacity="0.6" />
             </g>
 
             {/* 底座 / 下半球 */}
