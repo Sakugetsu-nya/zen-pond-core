@@ -72,11 +72,18 @@ export function ZenShell() {
   const toggleUiHidden = useCallback(() => setUiHidden((h) => !h), []);
 
   // 默认开启溪流：仅当用户「从未手动关闭过溪流」时才自动播放。
-  // 默认开启溪流：进入后用户首次交互（pointerdown）即恢复并启动溪流。
-  // 不持久化「关闭标记」——用户手动关掉只是当前不播，刷新后仍为默认开。
+  // 默认开启溪流：首次进入自动播放；若用户曾手动关闭，则记住偏好（持久化），
+  // 下次不再强制开启——既满足「默认开溪流」，又尊重个人记录。
   useEffect(() => {
     const audio = getZenAudio();
+    let userClosedCreek = false;
+    try {
+      userClosedCreek = localStorage.getItem("zen-creek-off") === "1";
+    } catch {
+      /* ignore */
+    }
     const startCreek = () => {
+      if (userClosedCreek) return;
       if (audio.isPlaying("creek")) return;
       audio.play("creek", 0.7);
     };
