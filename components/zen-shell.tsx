@@ -189,30 +189,25 @@ export function ZenShell() {
     [settings.rippleStrength]
   );
 
-  // 全局「随声起涟漪」：任何声音播放时，水面随机泛起涟漪（可在设置中开关）
+  // 全局「随声起涟漪」：只要任意声音在播放，水面就随机泛起涟漪（可在设置中开关）。
+  // 用 anyPlaying() 判断是否发声，避免低音量环境音被 RMS 阈值卡住而不触发；
+  // 涟漪半径/强度以音量（getLevel）调制，但保留可见下限，确保一定能看到。
   useEffect(() => {
     const audio = getZenAudio();
     let raf: number | null = null;
     let last = 0;
     const loop = (t: number) => {
-      if (settings.rippleOnSound) {
+      if (settings.rippleOnSound && audio.anyPlaying()) {
         if (t - last > 110) {
           last = t;
           const lvl = audio.getLevel();
-          // 合成音色（如溪流）整体音量偏低，阈值要足够小才能触发
-          if (lvl > 0.008) {
-            const x = (Math.random() * 2 - 1) * 0.85;
-            const y = (Math.random() * 2 - 1) * 0.85;
-            const f = rippleFactor(settings.rippleStrength);
-            // 更轻柔：半径更细、强度更低，涟漪更克制
-            addDropToApp(
-              appRef.current,
-              x,
-              y,
-              (0.015 + lvl * 0.02) * f,
-              (0.035 + lvl * 0.07) * f
-            );
-          }
+          const x = (Math.random() * 2 - 1) * 0.85;
+          const y = (Math.random() * 2 - 1) * 0.85;
+          const f = rippleFactor(settings.rippleStrength);
+          // 基础可见量 + 音量调制；即便音量极低也保留涟漪下限
+          const radius = (0.04 + lvl * 0.08) * f;
+          const strength = (0.1 + lvl * 0.25) * f;
+          addDropToApp(appRef.current, x, y, radius, strength);
         }
       }
       raf = requestAnimationFrame(loop);
