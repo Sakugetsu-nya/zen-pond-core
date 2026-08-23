@@ -29,3 +29,4 @@
 
 ## 📝 License
 本项目仅供个人学习与非商业用途。背景图、音频均来自互联网非版权公版素材。
+水波纹实现参考[feitangyuan/liquid-refraction-lab](https://github.com/feitangyuan/liquid-refraction-lab)
