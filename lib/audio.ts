@@ -10,22 +10,34 @@ export type SoundId =
   | "pink"
   | "bowl";
 
+// 拼接 basePath，保证 GitHub Pages 项目页（/repo/）与根路径（用户页/域名）都能正确加载音频。
+// 运行时从当前页面路径推断：GitHub Pages 项目页 URL 形如 https://user.github.io/<repo>/，
+// 取其第一段路径作为 base；根路径部署则 base 为空。
+function getAssetBase(): string {
+  if (typeof window === "undefined") return "";
+  const seg = window.location.pathname.split("/").filter(Boolean);
+  // 项目页：/zen-pond/...  ── 取第一段；根页面 /index.html 则无段
+  return seg.length > 0 ? `/${seg[0]}` : "";
+}
+const withBase = (p: string) =>
+  `${getAssetBase()}${p}`.replace(/\/{2,}/g, "/");
+
 // 环境音文件映射（位于 public/audio/，可替换为自己的音频）
 const FILE_MAP: Record<SoundId, string> = {
-  creek: "/audio/creek.mp3",
-  rain: "/audio/rain.mp3",
-  waves: "/audio/waves.mp3",
-  birds: "/audio/birds.mp3",
-  wind: "/audio/wind.mp3",
-  white: "/audio/white.mp3",
-  pink: "/audio/pink.mp3",
-  bowl: "/audio/bowl.mp3",
+  creek: withBase("/audio/creek.mp3"),
+  rain: withBase("/audio/rain.mp3"),
+  waves: withBase("/audio/waves.mp3"),
+  birds: withBase("/audio/birds.mp3"),
+  wind: withBase("/audio/wind.mp3"),
+  white: withBase("/audio/white.mp3"),
+  pink: withBase("/audio/pink.mp3"),
+  bowl: withBase("/audio/bowl.mp3"),
 };
 
 // 交互音效文件（木鱼、抛石水花），同样放在 public/audio/，缺省则回退合成音
 const SFX_FILES: Record<"woodblock" | "splash", string> = {
-  woodblock: "/audio/woodblock.wav",
-  splash: "/audio/splash.wav",
+  woodblock: withBase("/audio/woodblock.wav"),
+  splash: withBase("/audio/splash.wav"),
 };
 
 
