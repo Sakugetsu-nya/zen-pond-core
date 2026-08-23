@@ -72,6 +72,9 @@ export class ZenAudio {
   // 等 AudioContext 真正 running 后再据此启动。与 tracks（真实在播）分离，
   // 保证 UI 状态与引擎状态一致，避免按钮「点不掉/点不开」。
   private desired = new Map<SoundId, number>();
+  // 播放代际计数器：stop 时递增，旧 generation 的交叉淡变定时器不会创建新 source，
+  // 防止异步 race（statechange / setTimeout）导致「关不掉」。
+  private generations = new Map<SoundId, number>();
 
   private ensure() {
     if (this.ctx) return;
@@ -163,6 +166,10 @@ export class ZenAudio {
     // 不立即排期，避免 resume 瞬间所有音轨一起触发产生瞬态蜂鸣。
     this.desired.set(id, volume);
 
+    // 新播放 generation：stop 会递增该值，旧 generation 的 setTimeout 回调不会再创建 source
+    const gen = (this.generations.get(id) || 0) + 1;
+    this.generations.set(id, gen);
+
     // 浏览器自动播放策略：无用户手势时 ctx 处于 suspended，resume() 会被拒绝。
     // 此时直接返回，等 statechange / resume 成功（running）后再真正启动。
     if (this.ctx.state === "suspended") {
@@ -202,7 +209,8 @@ export class ZenAudio {
       const segLen = Math.max(0.5, buf.duration - skip);
 
       const startSegment = (startAt: number) => {
-        if (stopped) return;
+        // 已停止或 generation 已过期（新的 play/stop 已经发生）
+        if (stopped || (this.generations.get(id) || 0) !== gen) return;
         const s = ctx.createBufferSource();
         s.buffer = buf;
         const g = ctx.createGain();
@@ -231,7 +239,11 @@ export class ZenAudio {
         // 在段结束前 CROSS 秒启动下一段，与上一段交叉
         const nextStart = startAt + segLen - CROSS;
         const delayMs = Math.max(0, (nextStart - ctx.currentTime) * 1000 - 30);
-        const t = setTimeout(() => startSegment(nextStart), delayMs);
+        const t = setTimeout(() => {
+          // 再次校验 generation，防止 stop 发生在 setTimeout 触发之前导致漏关
+          if ((this.generations.get(id) || 0) !== gen) return;
+          startSegment(nextStart);
+        }, delayMs);
         timers.push(t);
       };
 
@@ -240,8 +252,12 @@ export class ZenAudio {
       this.tracks.set(id, {
         stop: () => {
           stopped = true;
+          // 递增 generation，使任何旧 generation 的 setTimeout 回调直接返回
+          this.generations.set(id, (this.generations.get(id) || 0) + 1);
           timers.forEach((t) => clearTimeout(t));
-          liveSources.forEach((s) => {
+          // 倒序停止并释放所有 source，避免 onended 修改数组导致跳过
+          for (let i = liveSources.length - 1; i >= 0; i--) {
+            const s = liveSources[i];
             try {
               s.stop();
             } catch {
@@ -252,8 +268,19 @@ export class ZenAudio {
             } catch {
               /* ignore */
             }
-          });
+          }
           liveSources.length = 0;
+          // 立即把 trackGain 静音并从 master 断开，确保没有任何漏网输出
+          if (this.ctx) {
+            const now = this.ctx.currentTime;
+            trackGain.gain.cancelScheduledValues(now);
+            trackGain.gain.setValueAtTime(0, now);
+          }
+          try {
+            trackGain.disconnect();
+          } catch {
+            /* ignore */
+          }
         },
         gain: trackGain,
       });
