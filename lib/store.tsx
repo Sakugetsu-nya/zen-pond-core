@@ -15,13 +15,15 @@ export interface Settings {
   masterVolume: number;
   audioReactive: boolean;
   rippleStrength: number; // 1(最弱) ~ 5(最强)
+  rippleOnSound: boolean; // 随声起涟漪：声音播放时水面随机泛起涟漪
 }
 
 const DEFAULTS: Settings = {
   bgImage: "/images/bg-lotus.jpg",
   masterVolume: 0.5,
   audioReactive: true,
-  rippleStrength: 5,
+  rippleStrength: 3, // 默认 3 档（适中）
+  rippleOnSound: true, // 默认开启随声起涟漪
 };
 
 interface StoreValue {

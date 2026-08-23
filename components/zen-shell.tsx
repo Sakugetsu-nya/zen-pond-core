@@ -37,10 +37,12 @@ export type ModuleId =
 const DEFAULT_FOCUS: FocusState = { mins: 15, remaining: 15 * 60, running: false };
 
 // 涟漪强度档位（1 最弱 ~ 5 最强）。当前值由设置面板控制，这里只做档位→系数映射。
-// 系数从 0.3（1 档）线性到 1.0（5 档），让最高档等于原本的「最强」体验。
+// 用户反馈原「2 档」（系数 0.475）手感适中，故把 0.475 定为 3 档（适中），
+// 其余档位在两侧依次排开：1→0.22, 2→0.35, 3→0.475, 4→0.66, 5→1.0（最强）。
+const RIPPLE_LEVELS = [0.22, 0.35, 0.475, 0.66, 1.0];
 function rippleFactor(level: number): number {
   const l = Math.max(1, Math.min(5, Math.round(level)));
-  return 0.3 + (l - 1) * 0.175; // 0.3, 0.475, 0.65, 0.825, 1.0
+  return RIPPLE_LEVELS[l - 1];
 }
 
 export function ZenShell() {
@@ -187,13 +189,13 @@ export function ZenShell() {
     [settings.rippleStrength]
   );
 
-  // 全局「随声起涟漪」：任何声音播放时，水面随机泛起涟漪
+  // 全局「随声起涟漪」：任何声音播放时，水面随机泛起涟漪（可在设置中开关）
   useEffect(() => {
     const audio = getZenAudio();
     let raf: number | null = null;
     let last = 0;
     const loop = (t: number) => {
-      if (settings.audioReactive) {
+      if (settings.rippleOnSound) {
         if (t - last > 110) {
           last = t;
           const lvl = audio.getLevel();
@@ -219,7 +221,7 @@ export function ZenShell() {
     return () => {
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [settings.audioReactive, settings.rippleStrength]);
+  }, [settings.rippleOnSound, settings.rippleStrength]);
 
   // 卸载时清理抛石计时器
   useEffect(() => {
