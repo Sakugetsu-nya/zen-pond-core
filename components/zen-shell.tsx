@@ -85,10 +85,10 @@ export function ZenShell() {
     const startCreek = () => {
       if (userClosedCreek) return;
       if (audio.isPlaying("creek")) return;
-      audio.play("creek", 0.7).catch(() => {});
+      audio.play("creek", 0.7);
     };
-    // 浏览器自动播放策略：先尝试，若被挂起则等首次交互再启动
-    startCreek();
+    // 浏览器自动播放策略：不在 mount 时创建 AudioContext（会卡首屏/被拦截），
+    // 改为等用户首次交互（pointerdown）后再 resume 并启动默认溪流。
     const onFirstGesture = () => {
       audio.resume();
       startCreek();

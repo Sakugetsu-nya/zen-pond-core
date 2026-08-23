@@ -68,10 +68,10 @@ export class ZenAudio {
   private analyser: AnalyserNode | null = null;
   private tracks = new Map<SoundId, Track>();
   private masterVolume = 0.5;
-  // 浏览器自动播放策略下，无用户手势时 resume() 会被拒绝。
-  // 此时不排期 start/ramp，改为挂入待播队列，等真正 resume 成功后再启动，
-  // 避免「suspended 窗口内排期 + resume 瞬间一起触发」产生的瞬态蜂鸣。
-  private pending = new Map<SoundId, number>();
+  // 「用户意图播放」列表：用户在 suspended（无手势）时点了播放，我们记录意图，
+  // 等 AudioContext 真正 running 后再据此启动。与 tracks（真实在播）分离，
+  // 保证 UI 状态与引擎状态一致，避免按钮「点不掉/点不开」。
+  private desired = new Map<SoundId, number>();
 
   private ensure() {
     if (this.ctx) return;
@@ -88,13 +88,12 @@ export class ZenAudio {
     this.analyser.fftSize = 256;
     this.master.connect(this.analyser);
     this.analyser.connect(this.ctx.destination);
-    // ctx 状态变化（如用户首次交互后变为 running）时，冲刷待播队列
+    // ctx 状态变化（如用户首次交互后变为 running）时，把意图列表里尚未真正
+    // 播放的音轨启动起来。注意：只补播「desired 有但 tracks 没有」的条目。
     this.ctx.addEventListener("statechange", () => {
       if (this.ctx && this.ctx.state === "running") {
-        const toPlay = Array.from(this.pending.entries());
-        this.pending.clear();
-        for (const [id, vol] of toPlay) {
-          this.play(id, vol);
+        for (const [id, vol] of this.desired) {
+          if (!this.tracks.has(id)) this.play(id, vol);
         }
       }
     });
@@ -127,18 +126,16 @@ export class ZenAudio {
         /* ignore */
       }
     }
-    // resume 成功后冲刷待播队列（statechange 也会触发，这里兜底）
+    // resume 成功后补播意图列表里尚未真正出声的音轨（statechange 也会触发，这里兜底）
     if (this.ctx && this.ctx.state === "running") {
-      const toPlay = Array.from(this.pending.entries());
-      this.pending.clear();
-      for (const [id, vol] of toPlay) {
-        this.play(id, vol);
+      for (const [id, vol] of this.desired) {
+        if (!this.tracks.has(id)) this.play(id, vol);
       }
     }
   }
 
   isPlaying(id: SoundId) {
-    return this.tracks.has(id) || this.pending.has(id);
+    return this.tracks.has(id) || this.desired.has(id);
   }
 
   anyPlaying() {
@@ -162,12 +159,13 @@ export class ZenAudio {
     this.ensure();
     if (!this.ctx || !this.master) return;
 
+    // 记录「用户意图播放」，UI 据此同步状态；suspended 时仅保留意图并尝试恢复，
+    // 不立即排期，避免 resume 瞬间所有音轨一起触发产生瞬态蜂鸣。
+    this.desired.set(id, volume);
+
     // 浏览器自动播放策略：无用户手势时 ctx 处于 suspended，resume() 会被拒绝。
-    // 此时不排期 start/ramp（否则 resume 成功瞬间所有排期一起触发 → 瞬态蜂鸣），
-    // 改为挂入待播队列，等 statechange 真正 running 后再重新进入本方法。
+    // 此时直接返回，等 statechange / resume 成功（running）后再真正启动。
     if (this.ctx.state === "suspended") {
-      this.pending.set(id, volume);
-      // 主动尝试 resume（多数浏览器在首次手势后才会成功，这里失败也无妨）
       try {
         await this.ctx.resume();
       } catch {
@@ -176,7 +174,7 @@ export class ZenAudio {
       return;
     }
 
-    this.stop(id);
+    this._stopTrack(id);
 
     const ctx = this.ctx;
     const trackGain = ctx.createGain();
@@ -234,11 +232,19 @@ export class ZenAudio {
     }
   }
 
+  /** 只停止真实在播的音轨，不影响 desired 意图列表 */
+  private _stopTrack(id: SoundId) {
+    this.tracks.get(id)?.stop();
+    this.tracks.delete(id);
+  }
+
   stop(id?: SoundId) {
     if (id) {
-      this.tracks.get(id)?.stop();
-      this.tracks.delete(id);
+      // 用户主动关闭：同时清除意图，避免之后被 statechange 误重新播放
+      this.desired.delete(id);
+      this._stopTrack(id);
     } else {
+      this.desired.clear();
       this.tracks.forEach((t) => t.stop());
       this.tracks.clear();
     }
