@@ -5,7 +5,7 @@ const BASE = (() => {
   return i > 0 ? p.slice(0, i) : ""; // "" 或 "/zen-pond"
 })();
 
-const CACHE = "zen-water-v1";
+const CACHE = "zen-water-v2";
 const PRECACHE = [
   `${BASE}/`,
   `${BASE}/manifest.webmanifest`,
@@ -14,6 +14,7 @@ const PRECACHE = [
   `${BASE}/icons/icon-192.png`,
   `${BASE}/icons/icon-512.png`,
   `${BASE}/icons/icon-maskable-512.png`,
+  `${BASE}/icons/woodfish.svg`,
 ];
 
 self.addEventListener("install", (event) => {
