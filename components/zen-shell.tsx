@@ -36,6 +36,13 @@ export type ModuleId =
 
 const DEFAULT_FOCUS: FocusState = { mins: 15, remaining: 15 * 60, running: false };
 
+// 涟漪强度档位（1 最弱 ~ 5 最强）。当前值由设置面板控制，这里只做档位→系数映射。
+// 系数从 0.3（1 档）线性到 1.0（5 档），让最高档等于原本的「最强」体验。
+function rippleFactor(level: number): number {
+  const l = Math.max(1, Math.min(5, Math.round(level)));
+  return 0.3 + (l - 1) * 0.175; // 0.3, 0.475, 0.65, 0.825, 1.0
+}
+
 export function ZenShell() {
   const { settings, bumpStreak } = useStore();
   const [app, setApp] = useState<ZenLiquidApp | null>(null);
@@ -148,33 +155,37 @@ export function ZenShell() {
   }, [focus.running]);
 
   // 抛石后：文字渐隐 + 水面持续涟漪（独立于模块是否卸载）
-  const triggerRelease = useCallback((text: string) => {
-    setReleasing(text);
-    playSplash();
-    dropCenter(appRef.current, 0.14, 0.7);
-    let i = 0;
-    releaseInterval.current = setInterval(() => {
-      i++;
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 0.04 + Math.random() * 0.14;
-      const x = 0.5 + Math.cos(angle) * dist;
-      const y = 0.5 + Math.sin(angle) * dist;
-      addDropToApp(
-        appRef.current,
-        x * 2 - 1,
-        -(y * 2 - 1),
-        0.03 + Math.random() * 0.04,
-        Math.max(0.09, 0.33 - i * 0.022)
-      );
-      if (i >= 14 && releaseInterval.current) {
-        clearInterval(releaseInterval.current);
-      }
-    }, 150);
-    releaseTimer.current = setTimeout(() => {
-      setReleasing(null);
-      if (releaseInterval.current) clearInterval(releaseInterval.current);
-    }, 2400);
-  }, []);
+  const triggerRelease = useCallback(
+    (text: string) => {
+      setReleasing(text);
+      playSplash();
+      const f = rippleFactor(settings.rippleStrength);
+      dropCenter(appRef.current, 0.14 * f, 0.7 * f);
+      let i = 0;
+      releaseInterval.current = setInterval(() => {
+        i++;
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 0.04 + Math.random() * 0.14;
+        const x = 0.5 + Math.cos(angle) * dist;
+        const y = 0.5 + Math.sin(angle) * dist;
+        addDropToApp(
+          appRef.current,
+          x * 2 - 1,
+          -(y * 2 - 1),
+          (0.03 + Math.random() * 0.04) * f,
+          Math.max(0.09, 0.33 - i * 0.022) * f
+        );
+        if (i >= 14 && releaseInterval.current) {
+          clearInterval(releaseInterval.current);
+        }
+      }, 150);
+      releaseTimer.current = setTimeout(() => {
+        setReleasing(null);
+        if (releaseInterval.current) clearInterval(releaseInterval.current);
+      }, 2400);
+    },
+    [settings.rippleStrength]
+  );
 
   // 全局「随声起涟漪」：任何声音播放时，水面随机泛起涟漪
   useEffect(() => {
@@ -190,13 +201,14 @@ export function ZenShell() {
           if (lvl > 0.008) {
             const x = (Math.random() * 2 - 1) * 0.85;
             const y = (Math.random() * 2 - 1) * 0.85;
+            const f = rippleFactor(settings.rippleStrength);
             // 更轻柔：半径更细、强度更低，涟漪更克制
             addDropToApp(
               appRef.current,
               x,
               y,
-              0.015 + lvl * 0.02,
-              0.035 + lvl * 0.07
+              (0.015 + lvl * 0.02) * f,
+              (0.035 + lvl * 0.07) * f
             );
           }
         }
@@ -207,7 +219,7 @@ export function ZenShell() {
     return () => {
       if (raf) cancelAnimationFrame(raf);
     };
-  }, [settings.audioReactive]);
+  }, [settings.audioReactive, settings.rippleStrength]);
 
   // 卸载时清理抛石计时器
   useEffect(() => {
@@ -227,11 +239,12 @@ export function ZenShell() {
         )
       )
         return;
-      dropAtClient(appRef.current, e.clientX, e.clientY, 0.05, 0.45);
+      const f = rippleFactor(settings.rippleStrength);
+      dropAtClient(appRef.current, e.clientX, e.clientY, 0.05 * f, 0.45 * f);
     };
     window.addEventListener("pointerdown", onDown);
     return () => window.removeEventListener("pointerdown", onDown);
-  }, []);
+  }, [settings.rippleStrength]);
 
   // 鼠标划过水面即漾起涟漪
   useEffect(() => {
@@ -248,11 +261,12 @@ export function ZenShell() {
       const now = performance.now();
       if (now - last < 60) return;
       last = now;
-      dropAtClient(appRef.current, e.clientX, e.clientY, 0.015, 0.08);
+      const f = rippleFactor(settings.rippleStrength);
+      dropAtClient(appRef.current, e.clientX, e.clientY, 0.015 * f, 0.08 * f);
     };
     window.addEventListener("pointermove", onMove);
     return () => window.removeEventListener("pointermove", onMove);
-  }, []);
+  }, [settings.rippleStrength]);
 
   return (
     <main className="pointer-events-none relative h-[100dvh] w-full overflow-hidden">

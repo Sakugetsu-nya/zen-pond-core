@@ -14,12 +14,14 @@ export interface Settings {
   bgImage: string;
   masterVolume: number;
   audioReactive: boolean;
+  rippleStrength: number; // 1(最弱) ~ 5(最强)
 }
 
 const DEFAULTS: Settings = {
   bgImage: "/images/bg-lotus.jpg",
   masterVolume: 0.5,
   audioReactive: true,
+  rippleStrength: 5,
 };
 
 interface StoreValue {

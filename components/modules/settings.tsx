@@ -51,6 +51,29 @@ export function SettingsModule({ onClose }: { onClose: () => void }) {
           </div>
         </div>
 
+        <div>
+          <div className="mb-2 text-[12px] text-white/60">涟漪强度</div>
+          <div className="flex items-center gap-2">
+            {[1, 2, 3, 4, 5].map((lv) => (
+              <button
+                key={lv}
+                onClick={() => update({ rippleStrength: lv })}
+                title={`档位 ${lv}`}
+                className={`flex h-10 flex-1 items-center justify-center rounded-xl border text-[14px] transition-colors ${
+                  settings.rippleStrength === lv
+                    ? "border-[#1d9e75] bg-[#1d9e75]/20 text-white"
+                    : "border-white/10 bg-white/5 text-white/55 hover:text-white/80"
+                }`}
+              >
+                {lv}
+              </button>
+            ))}
+          </div>
+          <div className="mt-1.5 text-[11px] text-white/45">
+            {["最弱", "较弱", "适中", "较强", "最强"][settings.rippleStrength - 1] ?? "适中"}
+          </div>
+        </div>
+
         <div className="rounded-2xl bg-white/8 px-4 py-3 text-center text-[13px] text-white/70">
           已连续静心 {streak} 天
         </div>
