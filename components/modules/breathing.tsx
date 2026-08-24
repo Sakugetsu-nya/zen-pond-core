@@ -75,15 +75,34 @@ export function BreathingModule({
     return () => clearInterval(iv);
   }, [running, pattern, app]);
 
+  function phaseAcc() {
+    let acc = 0;
+    for (let i = 0; i < phaseIdx && i < pattern.phases.length; i++) acc += pattern.phases[i].sec;
+    return acc;
+  }
   const phaseName = pattern.phases[phaseIdx]?.name ?? "";
-  const scale = phaseName === "吸气" ? 1.35 : phaseName === "呼气" ? 0.85 : 1.1;
+  // 与原小红书版一致：吸气时圈连续放大、屏息保持最大、呼气连续缩小，
+  // 而非原版的三段静态跳变，过渡更顺滑（"准备→吸气"圈可见地变大）。
+  const ph = pattern.phases[phaseIdx];
+  const within = elapsed.current - phaseAcc();
+  let scale = 1.0;
+  if (!running) scale = 1.0;
+  else if (phaseName === "吸气") {
+    const t = ph ? Math.min(1, Math.max(0, within / ph.sec)) : 0;
+    scale = 1.0 + 0.35 * t; // 1.0 -> 1.35 连续放大
+  } else if (phaseName === "呼气") {
+    const t = ph ? Math.min(1, Math.max(0, within / ph.sec)) : 0;
+    scale = 1.35 - 0.5 * t; // 1.35 -> 0.85 连续缩小
+  } else {
+    scale = 1.35; // 屏息保持最大
+  }
   const centerText = running ? phaseName : "准备";
 
   return (
     <PanelShell title="冥想呼吸" onClose={onClose}>
       <div className="flex flex-col items-center gap-5 py-2">
         <div
-          className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-[#1d9e75] bg-transparent shadow-[0_0_24px_rgba(29,158,117,0.4),inset_0_0_24px_rgba(29,158,117,0.1)] transition-transform duration-1000 ease-in-out"
+          className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-[#1d9e75] bg-transparent shadow-[0_0_24px_rgba(29,158,117,0.4),inset_0_0_24px_rgba(29,158,117,0.1)] transition-transform duration-200 ease-in-out"
           style={{ transform: `scale(${scale})` }}
         >
           <div className="flex flex-col items-center text-white">
