@@ -41,16 +41,20 @@ export function BreathingModule({
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [count, setCount] = useState(0);
   const circleRef = useRef<HTMLDivElement | null>(null);
+  // 累计已运行的秒数；暂停时冻结，恢复时续接，避免时间轴重置导致倒计时跳变。
+  const elapsedRef = useRef(0);
+  const lastTickRef = useRef(0);
 
   const pattern = PATTERNS.find((p) => p.id === pid)!;
 
   // 圈的大小由 requestAnimationFrame 逐帧直接写 DOM，绕开 React 重渲染与
   // transition 的离散步进 —— 这是平滑的关键（原 200ms 定时 + transition 会卡顿）。
+  // 倒计时只在本帧的「阶段」或「剩余秒数」相对上一帧变化时才 setState，
+  // 否则每帧 setState 会频繁触发重渲染并造成数字抖动。
   useEffect(() => {
     const circle = circleRef.current;
     if (!circle) return;
-    let raf = 0;
-    let start = 0;
+
     const total = pattern.phases.reduce((s, p) => s + p.sec, 0);
 
     function phaseAt(e: number) {
@@ -59,7 +63,7 @@ export function BreathingModule({
         if (e < acc + pattern.phases[i].sec) return { idx: i, within: e - acc };
         acc += pattern.phases[i].sec;
       }
-      return { idx: 0, within: 0 };
+      return { idx: pattern.phases.length - 1, within: 0 };
     }
     function scaleAt(e: number) {
       const { idx, within } = phaseAt(e);
@@ -69,30 +73,63 @@ export function BreathingModule({
       if (ph.name === "呼气") return 1.35 - 0.5 * t; // 1.35 -> 0.85 连续缩小
       return 1.35; // 屏息保持最大
     }
+
+    let raf = 0;
+    let lastPhase = -1;
+    let lastCount = -1;
+    let lastRipplePhase = -1;
+
     function frame(now: number) {
-      if (!start) start = now;
-      let e = (now - start) / 1000;
-      if (e >= total) e = e % total;
-      const { idx } = phaseAt(e);
-      setPhaseIdx(idx);
-      setCount(Math.max(1, Math.ceil(pattern.phases[idx].sec - (e - phaseAt(e).within))));
-      const scale = scaleAt(e);
-      circle!.style.transform = `scale(${scale})`;
-      // 阶段切换瞬间投下涟漪
-      if (phaseAt(e).within < 0.05) {
+      if (!lastTickRef.current) lastTickRef.current = now;
+      // running 为 false 时不推进时间轴（冻结），但圈保持当前 scale。
+      if (running) {
+        const dt = (now - lastTickRef.current) / 1000;
+        elapsedRef.current += dt;
+      }
+      lastTickRef.current = now;
+
+      const e = elapsedRef.current % total;
+      const { idx, within } = phaseAt(e);
+      const remaining = Math.max(1, Math.ceil(pattern.phases[idx].sec - within));
+
+      // 阶段切换瞬间投下涟漪（每进入一次阶段只投一次）
+      if (idx !== lastRipplePhase) {
         const ph = pattern.phases[idx];
         if (ph.name === "吸气") dropCenter(app, 0.05, 0.5);
         else if (ph.name === "呼气") dropCenter(app, 0.14, 0.5);
+        lastRipplePhase = idx;
       }
+
+      // 只在变化时才 setState，避免每帧重渲染
+      if (idx !== lastPhase) {
+        setPhaseIdx(idx);
+        lastPhase = idx;
+      }
+      if (remaining !== lastCount) {
+        setCount(remaining);
+        lastCount = remaining;
+      }
+
+      const scale = scaleAt(e);
+      circle!.style.transform = `scale(${scale})`;
+
       raf = requestAnimationFrame(frame);
     }
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
   }, [running, pattern, app]);
 
-  // 停止时把圈复位到 1.0
+  // 开始/暂停切换、或切换模式时，重置计时基准、累计时间与上一帧状态。
   useEffect(() => {
-    if (!running && circleRef.current) circleRef.current.style.transform = "scale(1)";
+    lastTickRef.current = 0;
+    elapsedRef.current = 0;
+  }, [running, pid]);
+
+  // 停止时把圈复位到 1.0；切换模式时归零计时。
+  useEffect(() => {
+    if (!running) {
+      if (circleRef.current) circleRef.current.style.transform = "scale(1)";
+    }
   }, [running]);
 
   const phaseName = pattern.phases[phaseIdx]?.name ?? "";
