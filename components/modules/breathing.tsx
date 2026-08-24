@@ -40,70 +40,71 @@ export function BreathingModule({
   const [running, setRunning] = useState(false);
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [count, setCount] = useState(0);
-  const elapsed = useRef(0);
+  const circleRef = useRef<HTMLDivElement | null>(null);
 
   const pattern = PATTERNS.find((p) => p.id === pid)!;
 
+  // 圈的大小由 requestAnimationFrame 逐帧直接写 DOM，绕开 React 重渲染与
+  // transition 的离散步进 —— 这是平滑的关键（原 200ms 定时 + transition 会卡顿）。
   useEffect(() => {
-    if (!running) return;
-    elapsed.current = 0;
-    setPhaseIdx(0);
-    setCount(pattern.phases[0].sec);
-    const iv = setInterval(() => {
-      elapsed.current += 0.2;
-      let e = elapsed.current;
-      const total = pattern.phases.reduce((s, p) => s + p.sec, 0);
-      if (e >= total) e = elapsed.current = 0;
+    const circle = circleRef.current;
+    if (!circle) return;
+    let raf = 0;
+    let start = 0;
+    const total = pattern.phases.reduce((s, p) => s + p.sec, 0);
+
+    function phaseAt(e: number) {
       let acc = 0;
-      let idx = 0;
       for (let i = 0; i < pattern.phases.length; i++) {
-        if (e < acc + pattern.phases[i].sec) {
-          idx = i;
-          break;
-        }
+        if (e < acc + pattern.phases[i].sec) return { idx: i, within: e - acc };
         acc += pattern.phases[i].sec;
       }
+      return { idx: 0, within: 0 };
+    }
+    function scaleAt(e: number) {
+      const { idx, within } = phaseAt(e);
       const ph = pattern.phases[idx];
-      const within = e - acc;
+      const t = Math.min(1, Math.max(0, within / ph.sec));
+      if (ph.name === "吸气") return 1.0 + 0.35 * t; // 1.0 -> 1.35 连续放大
+      if (ph.name === "呼气") return 1.35 - 0.5 * t; // 1.35 -> 0.85 连续缩小
+      return 1.35; // 屏息保持最大
+    }
+    function frame(now: number) {
+      if (!start) start = now;
+      let e = (now - start) / 1000;
+      if (e >= total) e = e % total;
+      const { idx } = phaseAt(e);
       setPhaseIdx(idx);
-      setCount(Math.max(1, Math.ceil(ph.sec - within)));
-      if (within < 0.25) {
+      setCount(Math.max(1, Math.ceil(pattern.phases[idx].sec - (e - phaseAt(e).within))));
+      const scale = scaleAt(e);
+      circle!.style.transform = `scale(${scale})`;
+      // 阶段切换瞬间投下涟漪
+      if (phaseAt(e).within < 0.05) {
+        const ph = pattern.phases[idx];
         if (ph.name === "吸气") dropCenter(app, 0.05, 0.5);
         else if (ph.name === "呼气") dropCenter(app, 0.14, 0.5);
       }
-    }, 200);
-    return () => clearInterval(iv);
+      raf = requestAnimationFrame(frame);
+    }
+    raf = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(raf);
   }, [running, pattern, app]);
 
-  function phaseAcc() {
-    let acc = 0;
-    for (let i = 0; i < phaseIdx && i < pattern.phases.length; i++) acc += pattern.phases[i].sec;
-    return acc;
-  }
+  // 停止时把圈复位到 1.0
+  useEffect(() => {
+    if (!running && circleRef.current) circleRef.current.style.transform = "scale(1)";
+  }, [running]);
+
   const phaseName = pattern.phases[phaseIdx]?.name ?? "";
-  // 与原小红书版一致：吸气时圈连续放大、屏息保持最大、呼气连续缩小，
-  // 而非原版的三段静态跳变，过渡更顺滑（"准备→吸气"圈可见地变大）。
-  const ph = pattern.phases[phaseIdx];
-  const within = elapsed.current - phaseAcc();
-  let scale = 1.0;
-  if (!running) scale = 1.0;
-  else if (phaseName === "吸气") {
-    const t = ph ? Math.min(1, Math.max(0, within / ph.sec)) : 0;
-    scale = 1.0 + 0.35 * t; // 1.0 -> 1.35 连续放大
-  } else if (phaseName === "呼气") {
-    const t = ph ? Math.min(1, Math.max(0, within / ph.sec)) : 0;
-    scale = 1.35 - 0.5 * t; // 1.35 -> 0.85 连续缩小
-  } else {
-    scale = 1.35; // 屏息保持最大
-  }
   const centerText = running ? phaseName : "准备";
 
   return (
     <PanelShell title="冥想呼吸" onClose={onClose}>
       <div className="flex flex-col items-center gap-5 py-2">
         <div
-          className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-[#1d9e75] bg-transparent shadow-[0_0_24px_rgba(29,158,117,0.4),inset_0_0_24px_rgba(29,158,117,0.1)] transition-transform duration-200 ease-in-out"
-          style={{ transform: `scale(${scale})` }}
+          ref={circleRef}
+          className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-[#1d9e75] bg-transparent shadow-[0_0_24px_rgba(29,158,117,0.4),inset_0_0_24px_rgba(29,158,117,0.1)] will-change-transform"
+          style={{ transform: "scale(1)" }}
         >
           <div className="flex flex-col items-center text-white">
             <span className="text-[18px] font-light tracking-widest">
