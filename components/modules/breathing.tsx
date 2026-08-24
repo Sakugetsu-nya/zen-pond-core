@@ -138,12 +138,16 @@ export function BreathingModule({
   return (
     <PanelShell title="冥想呼吸" onClose={onClose}>
       <div className="flex flex-col items-center gap-5 py-2">
-        <div
-          ref={circleRef}
-          className="flex h-32 w-32 items-center justify-center rounded-full border-2 border-[#1d9e75] bg-transparent shadow-[0_0_24px_rgba(29,158,117,0.4),inset_0_0_24px_rgba(29,158,117,0.1)] will-change-transform"
-          style={{ transform: "scale(1)" }}
-        >
-          <div className="flex flex-col items-center text-white">
+        {/* 固定大小的定位容器：圈放大时文字层不受影响 */}
+        <div className="relative h-32 w-32">
+          {/* 外圈：仅此元素被 rAF 缩放（边框 + 光晕），不含文字 */}
+          <div
+            ref={circleRef}
+            className="absolute inset-0 rounded-full border-2 border-[#1d9e75] bg-transparent shadow-[0_0_24px_rgba(29,158,117,0.4),inset_0_0_24px_rgba(29,158,117,0.1)] will-change-transform"
+            style={{ transform: "scale(1)" }}
+          />
+          {/* 文字层：绝对居中、不缩放，始终固定字号 */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
             <span className="text-[18px] font-light tracking-widest">
               {centerText}
             </span>
