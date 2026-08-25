@@ -2,8 +2,8 @@
 """Generate PWA icons from the source PNG.
 
 - favicon.png             : circular (tab favicon only), transparent corners
-- icon-192.png / icon-512.png : square full image (used for PWA install / home screen)
-- icon-maskable-512.png   : square with content in safe zone (adaptive mask)
+- icon-192.png / icon-512.png : rounded square (used for PWA install / home screen)
+- icon-maskable-512.png   : square full-bleed with safe zone (adaptive mask, must NOT be transparent)
 """
 import sys
 from pathlib import Path
@@ -26,6 +26,16 @@ def make_square(src: Path, size: int) -> Image.Image:
     return open_rgba(src).resize((size, size), Image.LANCZOS)
 
 
+def make_rounded_square(src: Path, size: int, radius_ratio: float = 0.2) -> Image.Image:
+    """圆角方形：四角透明，内容裁切为圆角矩形（app icon 观感）。"""
+    img = open_rgba(src).resize((size, size), Image.LANCZOS)
+    mask = Image.new("L", (size, size), 0)
+    r = int(size * radius_ratio)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, size, size), radius=r, fill=255)
+    out = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    return Image.composite(img, out, mask)
+
+
 def make_maskable(src: Path, size: int) -> Image.Image:
     img = open_rgba(src)
     safe = int(size * 0.8)
@@ -45,8 +55,8 @@ def main() -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     make_circular(src, 512).save(out_dir / "favicon.png")
-    make_square(src, 192).save(out_dir / "icon-192.png")
-    make_square(src, 512).save(out_dir / "icon-512.png")
+    make_rounded_square(src, 192).save(out_dir / "icon-192.png")
+    make_rounded_square(src, 512).save(out_dir / "icon-512.png")
     make_maskable(src, 512).save(out_dir / "icon-maskable-512.png")
 
     print(f"Icons written to {out_dir}")
