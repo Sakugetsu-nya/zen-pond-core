@@ -10,7 +10,6 @@ const PRECACHE = [
   `${BASE}/`,
   `${BASE}/manifest.webmanifest`,
   `${BASE}/vendor/liquid1.min.js`,
-  `${BASE}/icons/icon.svg`,
   `${BASE}/icons/icon-192.png`,
   `${BASE}/icons/icon-512.png`,
   `${BASE}/icons/icon-maskable-512.png`,

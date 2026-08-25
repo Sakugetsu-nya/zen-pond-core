@@ -1,6 +1,6 @@
 {
-  "name": "禅·静水 — 禅意解压",
-  "short_name": "静水",
+  "name": "一池静水",
+  "short_name": "一池静水",
   "description": "以水波纹为核心的交互式禅意解压网站：冥想呼吸、环境白噪音、抛石问心、专注计时。",
   "start_url": "./",
   "scope": "./",
@@ -9,12 +9,6 @@
   "background_color": "#0b1f2a",
   "theme_color": "#0b1f2a",
   "icons": [
-    {
-      "src": "./icons/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
     {
       "src": "./icons/icon-192.png",
       "sizes": "192x192",

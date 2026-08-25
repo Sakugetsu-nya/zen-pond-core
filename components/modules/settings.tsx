@@ -13,10 +13,10 @@ const resolveAsset = (p: string) =>
   `${getAssetBase()}${p}`.replace(/\/{2,}/g, "/");
 
 const BG_IMAGES = [
-  { name: "荷叶", src: "/images/bg-lotus.jpg" },
-  { name: "碧潭", src: "/images/bg-turquoise.jpg" },
-  { name: "清波", src: "/images/bg-pool.jpg" },
-  { name: "落花", src: "/images/bg-flowers.jpg" },
+  { name: "荷叶", src: "/images/bg-lotus.webp" },
+  { name: "碧潭", src: "/images/bg-turquoise.webp" },
+  { name: "清波", src: "/images/bg-pool.webp" },
+  { name: "落花", src: "/images/bg-flowers.webp" },
 ];
 
 export function SettingsModule({ onClose }: { onClose: () => void }) {
@@ -76,12 +76,15 @@ export function SettingsModule({ onClose }: { onClose: () => void }) {
 
         <label className="flex items-center justify-between text-[13px] text-white/80">
           <span>随声起涟漪</span>
-          <input
-            type="checkbox"
-            checked={settings.rippleOnSound}
-            onChange={(e) => update({ rippleOnSound: e.target.checked })}
-            className="h-4 w-4 accent-[#1d9e75]"
-          />
+          <span className="switch">
+            <input
+              id="ripple-on-sound-settings"
+              type="checkbox"
+              checked={settings.rippleOnSound}
+              onChange={(e) => update({ rippleOnSound: e.target.checked })}
+            />
+            <label htmlFor="ripple-on-sound-settings" className="slider" />
+          </span>
         </label>
         <div className="-mt-3 text-[11px] text-white/45">
           开启后，播放声音时水面会随机泛起轻柔涟漪

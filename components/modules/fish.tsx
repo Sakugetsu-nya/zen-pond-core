@@ -7,6 +7,14 @@ import { playWoodblock } from "@/lib/audio";
 
 const STORAGE_KEY = "zen-fish-v1";
 
+function getAssetBase(): string {
+  if (typeof window === "undefined") return "";
+  const seg = window.location.pathname.split("/").filter(Boolean);
+  return seg.length > 0 ? `/${seg[0]}` : "";
+}
+const resolveAsset = (p: string) =>
+  `${getAssetBase()}${p}`.replace(/\/{2,}/g, "/");
+
 export function FishModule({
   app,
   onClose,
@@ -54,7 +62,7 @@ export function FishModule({
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/zen-pond/icons/woodfish.svg"
+            src={resolveAsset("/icons/woodfish.svg")}
             alt="木鱼"
             className="h-20 w-20 select-none"
             draggable={false}

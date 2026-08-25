@@ -266,12 +266,15 @@ export function SoundModule({
 
         <label className="flex items-center justify-between text-[13px] text-white/80">
           <span>随声起涟漪</span>
-          <input
-            type="checkbox"
-            checked={settings.rippleOnSound}
-            onChange={(e) => update({ rippleOnSound: e.target.checked })}
-            className="h-4 w-4 accent-[#1d9e75]"
-          />
+          <span className="switch">
+            <input
+              id="ripple-on-sound-sound"
+              type="checkbox"
+              checked={settings.rippleOnSound}
+              onChange={(e) => update({ rippleOnSound: e.target.checked })}
+            />
+            <label htmlFor="ripple-on-sound-sound" className="slider" />
+          </span>
         </label>
         <div className="-mt-3 text-[11px] text-white/45">
           开启后，播放声音时水面会随机泛起轻柔涟漪

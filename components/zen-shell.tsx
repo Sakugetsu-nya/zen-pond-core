@@ -184,7 +184,7 @@ export function ZenShell() {
       releaseTimer.current = setTimeout(() => {
         setReleasing(null);
         if (releaseInterval.current) clearInterval(releaseInterval.current);
-      }, 2400);
+      }, 1600);
     },
     [settings.rippleStrength]
   );
@@ -316,10 +316,10 @@ export function ZenShell() {
       )}
 
       {releasing && !uiHidden ? (
-        <div className="pointer-events-none fixed inset-0 z-50 flex items-center justify-center">
+        <div className="pointer-events-none fixed inset-0 z-30 flex items-center justify-center">
           <span
             className="text-center text-[16px] text-white/80"
-            style={{ animation: "zen-fade-in-out 2.4s ease both" }}
+            style={{ animation: "release-fade-in-out 1.6s ease both" }}
           >
             {releasing}
           </span>

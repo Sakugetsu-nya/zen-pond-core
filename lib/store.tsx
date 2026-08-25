@@ -19,7 +19,7 @@ export interface Settings {
 }
 
 const DEFAULTS: Settings = {
-  bgImage: "/images/bg-lotus.jpg",
+  bgImage: "/images/bg-lotus.webp",
   masterVolume: 0.5,
   audioReactive: true,
   rippleStrength: 3, // 默认 3 档（适中）
@@ -46,7 +46,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const s = localStorage.getItem(SETTINGS_KEY);
-      if (s) setSettings({ ...DEFAULTS, ...JSON.parse(s) });
+      if (s) {
+        const parsed = JSON.parse(s) as Partial<Settings>;
+        // 迁移：旧版缓存的 jpg 背景路径自动指向新版 webp
+        if (parsed.bgImage && parsed.bgImage.endsWith(".jpg")) {
+          parsed.bgImage = parsed.bgImage.replace(/\.jpg$/, ".webp");
+        }
+        setSettings({ ...DEFAULTS, ...parsed });
+      }
       const st = localStorage.getItem(STREAK_KEY);
       if (st) {
         const o = JSON.parse(st);
